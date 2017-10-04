@@ -6,40 +6,47 @@ import javax.swing.JFrame;
 
 import com.harvard.config.Configuration;
 
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
+import javafx.scene.web.WebView;
+import sun.java2d.SunGraphicsEnvironment;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.GridLayout;
+import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.awt.event.ActionEvent;
+
+import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import java.awt.FlowLayout;
 import javax.swing.JLabel;
 import java.awt.Font;
+import java.awt.GraphicsConfiguration;
+
 import javax.swing.ImageIcon;
 
 public class huit_Dashboard {
-
+	private static final double SCALE_FACTOR = 0.5;
 	private JFrame frmHuitDashboard;
-	/**
-	 * @wbp.nonvisual location=60,1009
-	 */
-	private final JPanel ButtonPanel = new JPanel();
-	/**
-	 * @wbp.nonvisual location=541,-1
-	 */
-	private final JLabel Hello = new JLabel("HUIT Portal");
-	private final JPanel HelloPanel = new JPanel();
+	private final JPanel buttonPanel = new JPanel();
+	private final JLabel helloLabel = new JLabel("HUIT Portal");
+	private final JPanel helloPanel = new JPanel();
+	private final JFXPanel webPanel = new JFXPanel();
 
 	/**
 	 * Launch the application.
@@ -61,8 +68,11 @@ public class huit_Dashboard {
 	 * Create the application.
 	 * 
 	 * @throws URISyntaxException
+	 * @throws IOException
+	 * @throws NoSuchAlgorithmException
+	 * @throws KeyManagementException
 	 */
-	public huit_Dashboard() throws URISyntaxException {
+	public huit_Dashboard() throws URISyntaxException, IOException, KeyManagementException, NoSuchAlgorithmException {
 		initialize();
 	}
 
@@ -70,8 +80,18 @@ public class huit_Dashboard {
 	 * Initialize the contents of the frame.
 	 * 
 	 * @throws URISyntaxException
+	 * @throws IOException
+	 * @throws NoSuchAlgorithmException
+	 * @throws KeyManagementException
 	 */
-	private void initialize() throws URISyntaxException {
+	private void initialize() throws URISyntaxException, IOException, NoSuchAlgorithmException, KeyManagementException {
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		double width = screenSize.getWidth();
+		double height = screenSize.getHeight();
+		int helloFontSize = (int) (width * 0.025 * SCALE_FACTOR);
+		int harvardIconScale = (int) (helloFontSize * 2 * SCALE_FACTOR);
+		int linkFontSize = (int) (helloFontSize * 0.35 * SCALE_FACTOR);
+
 		frmHuitDashboard = new JFrame();
 		frmHuitDashboard.getContentPane().setLayout(new BorderLayout());
 		frmHuitDashboard.setResizable(false);
@@ -82,14 +102,26 @@ public class huit_Dashboard {
 		frmHuitDashboard.setBackground(new Color(1.0f, 1.0f, 1.0f, 0.5f));
 		frmHuitDashboard.setVisible(true);
 
-		ButtonPanel.setBackground(new Color(1.0f, 1.0f, 1.0f, 0.5f));
+		helloPanel.setForeground(Color.WHITE);
+		helloPanel.setBackground(new Color(79, 0, 9));
+		frmHuitDashboard.getContentPane().add(helloPanel, BorderLayout.NORTH);
+		Image icon = ImageIO.read(getClass().getResource("/res/harvard_shield_logo.png"));
+		helloLabel.setIcon(
+				new ImageIcon(icon.getScaledInstance(harvardIconScale, harvardIconScale, Image.SCALE_DEFAULT)));
+		helloLabel.setBackground(Color.WHITE);
+		helloLabel.setFont(new Font("Century Schoolbook", Font.BOLD, helloFontSize));
+		helloLabel.setForeground(Color.WHITE);
+		helloPanel.add(helloLabel);
+
+		buttonPanel.setBackground(new Color(1.0f, 1.0f, 1.0f, 0.5f));
 		List<String[]> url = Configuration.readURL();
 
 		for (int i = 0; i < url.size(); i++) {
 			URI uri = new URI(url.get(i)[1].trim());
 
 			JButton button = new JButton();
-			button.setText("<HTML><FONT color=\"#0000EE\"><U>" + url.get(i)[0] + "</U></FONT></HTML>");
+			button.setText("<HTML><FONT size = \"" + linkFontSize + "\" color=\"#0000EE\"><U>" + url.get(i)[0].trim()
+					+ "</U></FONT></HTML>");
 			button.setHorizontalAlignment(SwingConstants.LEFT);
 			button.setBorderPainted(false);
 			button.setOpaque(false);
@@ -108,19 +140,31 @@ public class huit_Dashboard {
 				}
 
 			});
-			ButtonPanel.add(button);
+			buttonPanel.add(button);
+			buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
 
 		}
-		HelloPanel.setForeground(Color.WHITE);
-		HelloPanel.setBackground(new Color(79, 0, 9));
-		frmHuitDashboard.getContentPane().add(HelloPanel, BorderLayout.NORTH);
-		Hello.setIcon(new ImageIcon(new ImageIcon("res/harvard_shield_logo.png").getImage().getScaledInstance(20, 20, Image.SCALE_DEFAULT)));
-		Hello.setBackground(Color.WHITE);
-		Hello.setFont(new Font("Century Schoolbook", Font.BOLD, 15));
-		Hello.setForeground(Color.WHITE);
-		HelloPanel.add(Hello);
-		frmHuitDashboard.getContentPane().add(ButtonPanel);
-		ButtonPanel.setLayout(new BoxLayout(ButtonPanel, BoxLayout.Y_AXIS));
+
+		Platform.runLater(() -> {
+
+			WebView webView = new WebView();
+			webPanel.setScene(new Scene(webView));
+			webView.setZoom(2.2*SCALE_FACTOR);
+			webView.getEngine().load("https://huit.harvard.edu/");
+			webView.getEngine().getLoadWorker().stateProperty().addListener((ov, oldState, newState) -> {
+				System.err.println(webView.getEngine().getLoadWorker().exceptionProperty());
+			});
+		});
+
+		frmHuitDashboard.getContentPane().add(buttonPanel, BorderLayout.LINE_START);
+
+		frmHuitDashboard.getContentPane().add(webPanel, BorderLayout.CENTER);
+
+		GraphicsConfiguration config = frmHuitDashboard.getGraphicsConfiguration();
+		Rectangle usableBounds = SunGraphicsEnvironment.getUsableBounds(config.getDevice());
+		Rectangle bounds = new Rectangle((int) (usableBounds.getMaxX() * SCALE_FACTOR), (int) (usableBounds.getMaxY() * SCALE_FACTOR));
+		frmHuitDashboard.setMaximizedBounds(bounds);
+		frmHuitDashboard.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
 	}
 

@@ -7,12 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Configuration {
-	private static final String URL_PATH = "C:\\Users\\Duy\\Desktop\\url.txt";
+	private static final String URL_PATH = System.getProperty("user.home") + "\\Desktop\\url.txt";
 	
 	/*
 	 * Return a list with URL and their names
 	 */
 	public static List<String[]> readURL() {
+		System.out.println(URL_PATH);
 		List<String[]> result = new ArrayList<String[]>();
 		try (BufferedReader urlReader = new BufferedReader(new FileReader(URL_PATH))) {
 
