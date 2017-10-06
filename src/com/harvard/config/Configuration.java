@@ -7,15 +7,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Configuration {
-	private static final String URL_PATH = System.getProperty("user.home") + "\\Desktop\\url.txt";
-	
+	private static final String WINDOWS_URL_CONFIG_PATH = System.getProperty("user.home") + "\\Desktop\\url.txt";
+	private static final String MAC_URL_CONFIG_PATH = System.getProperty("user.home") + "\\Desktop\\url.txt";
+	private static final String OS_NAME = System.getProperty("os.name");
+
 	/*
 	 * Return a list with URL and their names
 	 */
 	public static List<String[]> readURL() {
-		System.out.println(URL_PATH);
+		String path = "";
 		List<String[]> result = new ArrayList<String[]>();
-		try (BufferedReader urlReader = new BufferedReader(new FileReader(URL_PATH))) {
+
+		if (OS_NAME.contains("Mac")) {
+			path = MAC_URL_CONFIG_PATH;
+		} else if (OS_NAME.contains("Window")) {
+			path = WINDOWS_URL_CONFIG_PATH;
+		}
+		
+		try (BufferedReader urlReader = new BufferedReader(new FileReader(path))) {
 
 			String currentLine;
 
