@@ -41,10 +41,10 @@ import java.awt.GraphicsConfiguration;
 import javax.swing.ImageIcon;
 
 public class huit_Dashboard {
-	private static final double SCALE_FACTOR = 0.5;
+	private static final double SCALE_FACTOR = 0.6;
 	private JFrame frmHuitDashboard;
 	private final JPanel buttonPanel = new JPanel();
-	private final JLabel helloLabel = new JLabel("HUIT Portal");
+	private final JLabel helloLabel = new JLabel("HUIT Portal (Computer: "+Configuration.getComputerName()+")");
 	private final JPanel helloPanel = new JPanel();
 	private final JFXPanel webPanel = new JFXPanel();
 
@@ -150,7 +150,7 @@ public class huit_Dashboard {
 			WebView webView = new WebView();
 			webPanel.setScene(new Scene(webView));
 			webView.setZoom(2.2*SCALE_FACTOR);
-			webView.getEngine().load("https://huit.harvard.edu/");
+			webView.getEngine().load(Configuration.getHomePage());
 			webView.getEngine().getLoadWorker().stateProperty().addListener((ov, oldState, newState) -> {
 				System.err.println(webView.getEngine().getLoadWorker().exceptionProperty());
 			});
@@ -164,7 +164,7 @@ public class huit_Dashboard {
 		Rectangle usableBounds = SunGraphicsEnvironment.getUsableBounds(config.getDevice());
 		Rectangle bounds = new Rectangle((int) (usableBounds.getMaxX() * SCALE_FACTOR), (int) (usableBounds.getMaxY() * SCALE_FACTOR));
 		frmHuitDashboard.setMaximizedBounds(bounds);
-		frmHuitDashboard.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		frmHuitDashboard.setBounds(bounds);
 
 	}
 
