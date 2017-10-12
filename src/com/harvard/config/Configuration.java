@@ -10,6 +10,7 @@ import java.net.UnknownHostException;
 
 public class Configuration {
 	private static final String WINDOWS_URL_CONFIG_PATH = System.getProperty("user.home") + "\\Desktop\\url.txt";
+	private static final String MAC_URL_CONFIG_PATH = "/Users/huitlabadmin/Desktop/url.txt";
 	private static final String WINDOWS_HOMEPAGE_CONFIG_PATH = System.getProperty("user.home") + "\\Desktop\\homepage.txt";
 	private static final String MAC_URL_CONFIG_PATH = System.getProperty("user.home") + "\\Desktop\\url.txt";
 	private static final String OS_NAME = System.getProperty("os.name");
@@ -22,6 +23,7 @@ public class Configuration {
 		List<String[]> result = new ArrayList<String[]>();
 
 		if (OS_NAME.contains("Mac")) {
+			System.setProperty("apple.laf.useScreenMenuBar", "true");
 			path = MAC_URL_CONFIG_PATH;
 		} else if (OS_NAME.contains("Window")) {
 			path = WINDOWS_URL_CONFIG_PATH;

@@ -163,6 +163,7 @@ public class huit_Dashboard {
 		GraphicsConfiguration config = frmHuitDashboard.getGraphicsConfiguration();
 		Rectangle usableBounds = SunGraphicsEnvironment.getUsableBounds(config.getDevice());
 		Rectangle bounds = new Rectangle((int) (usableBounds.getMaxX() * SCALE_FACTOR), (int) (usableBounds.getMaxY() * SCALE_FACTOR));
+		bounds.setLocation(0, 22);
 		frmHuitDashboard.setMaximizedBounds(bounds);
 		frmHuitDashboard.setBounds(bounds);
 
