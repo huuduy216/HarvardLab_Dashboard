@@ -12,7 +12,6 @@ public class Configuration {
 	private static final String WINDOWS_URL_CONFIG_PATH = System.getProperty("user.home") + "\\Desktop\\url.txt";
 	private static final String MAC_URL_CONFIG_PATH = "/Users/huitlabadmin/Desktop/url.txt";
 	private static final String WINDOWS_HOMEPAGE_CONFIG_PATH = System.getProperty("user.home") + "\\Desktop\\homepage.txt";
-	private static final String MAC_URL_CONFIG_PATH = System.getProperty("user.home") + "\\Desktop\\url.txt";
 	private static final String OS_NAME = System.getProperty("os.name");
 
 	/*
