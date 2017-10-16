@@ -23,8 +23,10 @@ import java.awt.Toolkit;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -54,6 +56,7 @@ public class huit_Dashboard {
 	private final JFXPanel webPanel = new JFXPanel();
 	private final JPanel computerInfoPanel = new JPanel();
 	private final JLabel computerInfoLabel = new JLabel();
+	private int helloFontSize, harvardIconScale, linkFontSize, infoFontSize;
 
 	/**
 	 * Launch the application.
@@ -92,35 +95,72 @@ public class huit_Dashboard {
 	 * @throws KeyManagementException
 	 */
 	private void initialize() throws URISyntaxException, IOException, NoSuchAlgorithmException, KeyManagementException {
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		double width = screenSize.getWidth();
-		double height = screenSize.getHeight();
-		int helloFontSize = (int) (width * 0.025 * SCALE_FACTOR);
-		int harvardIconScale = (int) (helloFontSize * 2 * SCALE_FACTOR);
-		int linkFontSize = (int) (helloFontSize * 0.35 * SCALE_FACTOR);
-		int infoFontSize = (int) (helloFontSize * 0.25 * SCALE_FACTOR);
+		setUpFontSizes();
 
-		frmHuitDashboard = new JFrame();
-		frmHuitDashboard.getContentPane().setLayout(new BorderLayout());
-		frmHuitDashboard.setResizable(false);
-		frmHuitDashboard.setTitle("HUIT DashBoard");
-		frmHuitDashboard.setBounds(100, 100, 655, 443);
-		frmHuitDashboard.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		frmHuitDashboard.setUndecorated(true);
-		frmHuitDashboard.setBackground(new Color(1.0f, 1.0f, 1.0f, 0.5f));
-		frmHuitDashboard.setVisible(true);
+		setUpMainFrame();
 
-		helloPanel.setForeground(Color.WHITE);
-		helloPanel.setBackground(new Color(79, 0, 9));
-		frmHuitDashboard.getContentPane().add(helloPanel, BorderLayout.NORTH);
-		Image icon = ImageIO.read(getClass().getResource("/res/harvard_shield_logo.png"));
-		helloLabel.setIcon(
-				new ImageIcon(icon.getScaledInstance(harvardIconScale, harvardIconScale, Image.SCALE_DEFAULT)));
-		helloLabel.setBackground(Color.WHITE);
-		helloLabel.setFont(new Font("Century Schoolbook", Font.BOLD, helloFontSize));
-		helloLabel.setForeground(Color.WHITE);
-		helloPanel.add(helloLabel);
+		setUpHelloPanel(helloFontSize, harvardIconScale);
 
+		setUpButtonPanel();
+
+		setUpWebView();
+		
+		setUpComputerInfoPanel();
+
+		setUpLayeredPanel();
+
+		frmHuitDashboard.getContentPane().add(layers);
+
+		setMainFrameBounds();
+
+	}
+
+	private void setUpWebView() {
+		Platform.runLater(() -> {
+
+			WebView webView = new WebView();
+			webPanel.setScene(new Scene(webView));
+			webView.setZoom(2.2 * SCALE_FACTOR);
+			webView.getEngine().load(Configuration.getHomePage());
+			webView.getEngine().getLoadWorker().stateProperty().addListener((ov, oldState, newState) -> {
+				System.err.println(webView.getEngine().getLoadWorker().exceptionProperty());
+			});
+		});
+	}
+
+	private void setMainFrameBounds() {
+		GraphicsConfiguration config = frmHuitDashboard.getGraphicsConfiguration();
+		Rectangle usableBounds = SunGraphicsEnvironment.getUsableBounds(config.getDevice());
+		Rectangle bounds = new Rectangle((int) (usableBounds.getMaxX() * SCALE_FACTOR),
+				(int) (usableBounds.getMaxY() * SCALE_FACTOR));
+		bounds.setLocation(0, 22);
+		frmHuitDashboard.setMaximizedBounds(bounds);
+		frmHuitDashboard.setBounds(bounds);
+	}
+
+	private void setUpLayeredPanel() {
+		layers.setLayout(new BorderLayout(0, 0));
+		layers.add(buttonPanel, BorderLayout.LINE_START);
+
+		layers.add(webPanel);
+
+		layers.add(computerInfoPanel, BorderLayout.SOUTH);
+
+		layers.setLayer(webPanel, 2);
+		layers.setLayer(computerInfoPanel, 1);
+	}
+
+	private void setUpComputerInfoPanel() throws UnknownHostException, SocketException {
+		computerInfoLabel.setBackground(UIManager.getColor("Button.highlight"));
+
+		computerInfoLabel.setText("<HTML><FONT size = \"" + infoFontSize + "\">" + "IP Address: "
+				+ Configuration.getIP() + "<br>" + "MAC Address: " + Configuration.getMAC() + "</FONT></HTML>");
+		computerInfoPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		computerInfoPanel.add(computerInfoLabel);
+		computerInfoPanel.setBackground(new Color(1.0f, 1.0f, 1.0f, 0.5f));
+	}
+
+	private void setUpButtonPanel() throws URISyntaxException {
 		buttonPanel.setBackground(new Color(1.0f, 1.0f, 1.0f, 0.5f));
 		List<String[]> url = Configuration.readURL();
 
@@ -152,44 +192,41 @@ public class huit_Dashboard {
 			buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
 
 		}
+	}
 
-		Platform.runLater(() -> {
+	private void setUpFontSizes() {
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		double width = screenSize.getWidth();
+		double height = screenSize.getHeight();
+		helloFontSize = (int) (width * 0.025 * SCALE_FACTOR);
+		harvardIconScale = (int) (helloFontSize * 2 * SCALE_FACTOR);
+		linkFontSize = (int) (helloFontSize * 0.35 * SCALE_FACTOR);
+		infoFontSize = (int) (helloFontSize * 0.25 * SCALE_FACTOR);
+	}
 
-			WebView webView = new WebView();
-			webPanel.setScene(new Scene(webView));
-			webView.setZoom(2.2 * SCALE_FACTOR);
-			webView.getEngine().load(Configuration.getHomePage());
-			webView.getEngine().getLoadWorker().stateProperty().addListener((ov, oldState, newState) -> {
-				System.err.println(webView.getEngine().getLoadWorker().exceptionProperty());
-			});
-		});
-		computerInfoLabel.setBackground(UIManager.getColor("Button.highlight"));
+	private void setUpHelloPanel(int helloFontSize, int harvardIconScale) throws IOException {
+		helloPanel.setForeground(Color.WHITE);
+		helloPanel.setBackground(new Color(79, 0, 9));
+		frmHuitDashboard.getContentPane().add(helloPanel, BorderLayout.NORTH);
+		Image icon = ImageIO.read(getClass().getResource("/res/harvard_shield_logo.png"));
+		helloLabel.setIcon(
+				new ImageIcon(icon.getScaledInstance(harvardIconScale, harvardIconScale, Image.SCALE_DEFAULT)));
+		helloLabel.setBackground(Color.WHITE);
+		helloLabel.setFont(new Font("Century Schoolbook", Font.BOLD, helloFontSize));
+		helloLabel.setForeground(Color.WHITE);
+		helloPanel.add(helloLabel);
+	}
 
-		computerInfoLabel.setText("<HTML><FONT size = \"" + infoFontSize + "\">" + "IP Address: "
-				+ Configuration.getIP() + "<br>" + "MAC Address: " + Configuration.getMAC() + "</FONT></HTML>");
-		computerInfoPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-		computerInfoPanel.add(computerInfoLabel);
-		computerInfoPanel.setBackground(new Color(1.0f, 1.0f, 1.0f, 0.5f));
-		
-		layers.setLayout(new BorderLayout(0, 0));
-		layers.add(buttonPanel, BorderLayout.LINE_START);
-		
-		layers.add(webPanel);
-
-		layers.add(computerInfoPanel, BorderLayout.SOUTH);
-
-		layers.setLayer(webPanel, 2);
-		layers.setLayer(computerInfoPanel, 1);
-		
-		frmHuitDashboard.getContentPane().add(layers);
-		GraphicsConfiguration config = frmHuitDashboard.getGraphicsConfiguration();
-		Rectangle usableBounds = SunGraphicsEnvironment.getUsableBounds(config.getDevice());
-		Rectangle bounds = new Rectangle((int) (usableBounds.getMaxX() * SCALE_FACTOR),
-				(int) (usableBounds.getMaxY() * SCALE_FACTOR));
-		bounds.setLocation(0, 22);
-		frmHuitDashboard.setMaximizedBounds(bounds);
-		frmHuitDashboard.setBounds(bounds);
-
+	private void setUpMainFrame() {
+		frmHuitDashboard = new JFrame();
+		frmHuitDashboard.getContentPane().setLayout(new BorderLayout());
+		frmHuitDashboard.setResizable(false);
+		frmHuitDashboard.setTitle("HUIT DashBoard");
+		frmHuitDashboard.setBounds(100, 100, 655, 443);
+		frmHuitDashboard.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		frmHuitDashboard.setUndecorated(true);
+		frmHuitDashboard.setBackground(new Color(1.0f, 1.0f, 1.0f, 0.5f));
+		frmHuitDashboard.setVisible(true);
 	}
 
 }
