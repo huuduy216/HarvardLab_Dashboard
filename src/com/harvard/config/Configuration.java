@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 
 public class Configuration {
@@ -84,5 +86,21 @@ public class Configuration {
 		    System.out.println("Hostname can not be resolved");
 		}
 		return hostname;
+	}
+	
+	public static String getIP() throws UnknownHostException {
+		InetAddress ip = InetAddress.getLocalHost();
+		return ip.getHostAddress();
+	}
+	
+	public static String getMAC() throws UnknownHostException, SocketException {
+		InetAddress ip = InetAddress.getLocalHost();
+		NetworkInterface network = NetworkInterface.getByInetAddress(ip);
+		byte[] mac = network.getHardwareAddress();
+		StringBuilder macFormat = new StringBuilder();
+		for (int i = 0; i < mac.length; i++) {
+			macFormat.append(String.format("%02X%s", mac[i], (i < mac.length -1) ? "-" : ""));
+		}
+		return macFormat.toString();
 	}
 }

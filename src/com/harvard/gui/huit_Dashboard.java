@@ -1,6 +1,7 @@
 package com.harvard.gui;
 
 import java.awt.EventQueue;
+import java.awt.FlowLayout;
 
 import javax.swing.JFrame;
 
@@ -35,18 +36,24 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+
 import java.awt.Font;
 import java.awt.GraphicsConfiguration;
 
 import javax.swing.ImageIcon;
+import javax.swing.UIManager;
 
 public class huit_Dashboard {
 	private static final double SCALE_FACTOR = 0.6;
 	private JFrame frmHuitDashboard;
+	private final JLayeredPane layers = new JLayeredPane();
 	private final JPanel buttonPanel = new JPanel();
-	private final JLabel helloLabel = new JLabel("HUIT Portal (Computer: "+Configuration.getComputerName()+")");
+	private final JLabel helloLabel = new JLabel("HUIT Portal (Computer: " + Configuration.getComputerName() + ")");
 	private final JPanel helloPanel = new JPanel();
 	private final JFXPanel webPanel = new JFXPanel();
+	private final JPanel computerInfoPanel = new JPanel();
+	private final JLabel computerInfoLabel = new JLabel();
 
 	/**
 	 * Launch the application.
@@ -91,6 +98,7 @@ public class huit_Dashboard {
 		int helloFontSize = (int) (width * 0.025 * SCALE_FACTOR);
 		int harvardIconScale = (int) (helloFontSize * 2 * SCALE_FACTOR);
 		int linkFontSize = (int) (helloFontSize * 0.35 * SCALE_FACTOR);
+		int infoFontSize = (int) (helloFontSize * 0.25 * SCALE_FACTOR);
 
 		frmHuitDashboard = new JFrame();
 		frmHuitDashboard.getContentPane().setLayout(new BorderLayout());
@@ -149,20 +157,35 @@ public class huit_Dashboard {
 
 			WebView webView = new WebView();
 			webPanel.setScene(new Scene(webView));
-			webView.setZoom(2.2*SCALE_FACTOR);
+			webView.setZoom(2.2 * SCALE_FACTOR);
 			webView.getEngine().load(Configuration.getHomePage());
 			webView.getEngine().getLoadWorker().stateProperty().addListener((ov, oldState, newState) -> {
 				System.err.println(webView.getEngine().getLoadWorker().exceptionProperty());
 			});
 		});
+		computerInfoLabel.setBackground(UIManager.getColor("Button.highlight"));
 
-		frmHuitDashboard.getContentPane().add(buttonPanel, BorderLayout.LINE_START);
+		computerInfoLabel.setText("<HTML><FONT size = \"" + infoFontSize + "\">" + "IP Address: "
+				+ Configuration.getIP() + "<br>" + "MAC Address: " + Configuration.getMAC() + "</FONT></HTML>");
+		computerInfoPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		computerInfoPanel.add(computerInfoLabel);
+		computerInfoPanel.setBackground(new Color(1.0f, 1.0f, 1.0f, 0.5f));
+		
+		layers.setLayout(new BorderLayout(0, 0));
+		layers.add(buttonPanel, BorderLayout.LINE_START);
+		
+		layers.add(webPanel);
 
-		frmHuitDashboard.getContentPane().add(webPanel, BorderLayout.CENTER);
+		layers.add(computerInfoPanel, BorderLayout.SOUTH);
 
+		layers.setLayer(webPanel, 2);
+		layers.setLayer(computerInfoPanel, 1);
+		
+		frmHuitDashboard.getContentPane().add(layers);
 		GraphicsConfiguration config = frmHuitDashboard.getGraphicsConfiguration();
 		Rectangle usableBounds = SunGraphicsEnvironment.getUsableBounds(config.getDevice());
-		Rectangle bounds = new Rectangle((int) (usableBounds.getMaxX() * SCALE_FACTOR), (int) (usableBounds.getMaxY() * SCALE_FACTOR));
+		Rectangle bounds = new Rectangle((int) (usableBounds.getMaxX() * SCALE_FACTOR),
+				(int) (usableBounds.getMaxY() * SCALE_FACTOR));
 		bounds.setLocation(0, 22);
 		frmHuitDashboard.setMaximizedBounds(bounds);
 		frmHuitDashboard.setBounds(bounds);
